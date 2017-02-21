@@ -19,7 +19,6 @@
 #include "DetectorMessenger.hh"
 
 #include "G4Material.hh"
-
 #include "G4Tubs.hh"
  //GeFile
 #include "G4Box.hh" 
@@ -100,6 +99,7 @@ fPhysiGeThickDetectoCryo(NULL)
     fGeThickDetectorRadius = 4.5*cm; // 3.0 * cm; //3.0*cm;Hiro's detector
     fGeThinDetectorRadius = 4.5 * cm;
     fSpacing = 5*mm;
+    pi = 3.14159265358979323846; 
 }
     //fUseGeThinDetector = true;
     //fUseGeThickDetector= true;
@@ -184,7 +184,7 @@ G4int DetectionSystemGedssd::ConstructThinDetector() {
   
     //The below line replaced the SubtractionSolid since it is necessary for the logical volume
 
-    G4Tubs* solidGeThinDetector = G4Tubs("GeThinDetector",0.,fGeThinDetectorRadius,fGeThinDetectorThickness/2.,0.,twopi);
+    G4Tubs* solidGeThinDetector = new G4Tubs("GeThinDetector",0.,fGeThinDetectorRadius,fGeThinDetectorThickness/2.,0.,2*pi);
     fLogicThinDetector = new G4LogicalVolume(solidGeThinDetector, GeThinDetectorMaterial, "GeThinDetector", 0, 0, 0);
     fLogicThinDetector->SetVisAttributes(ThinDetectorVisAtt);
 
@@ -193,7 +193,7 @@ G4int DetectionSystemGedssd::ConstructThinDetector() {
     G4RotationMatrix* rotateNull = new G4RotationMatrix;
 
 
-    fAssembly->AddPlacedVolume(fLogicThinDetector, fGeThinDetectorPos, rotateNull);
+    this->assemblyGedssd->AddPlacedVolume(fLogicThinDetector, fGeThinDetectorPos, rotateNull);
 
     return 1;
 } //end ::ConstructThinDetector
@@ -205,7 +205,7 @@ G4int DetectionSystemGedssd::ConstructThinDetector() {
 G4int DetectionSystemGedssd::ConstructThickDetectorCryo() {
     G4Material* GeThickDetectorCryoMaterial = G4Material::GetMaterial("Al");
     if( !GeThickDetectorCryoMaterial ) {
-	G4out << " ----> Material " << "Al" << " not found, cannot build the Thick Cryo!" << G4endl;
+	G4cout << " ----> Material " << "Al" << " not found, cannot build the Thick Cryo!" << G4endl;
 	return 0;
     }
     
@@ -221,11 +221,11 @@ G4int DetectionSystemGedssd::ConstructThickDetectorCryo() {
     G4VisAttributes* ThickDetectorCryoVisAtt = new G4VisAttributes(G4Colour::Blue());
     ThickDetectorCryoVisAtt->SetVisibility(true); 
 
-    G4Tubs* solidGeThickDetectorCryo = new G4Tubs("GeThickDetectorCryo",fGeThickDetectorCryoInnRad,fGeThickDetectorCryoOutRad,fGeThickDetectorCryoThickness/2.,0.,twopi);
+    G4Tubs* solidGeThickDetectorCryo = new G4Tubs("GeThickDetectorCryo",fGeThickDetectorCryoInnRad,fGeThickDetectorCryoOutRad,fGeThickDetectorCryoThickness/2.,0.,2*pi);
     fLogicGeThickDetectorCryo = new G4LogicalVolume(solidGeThickDetectorCryo,GeThickDetectorCryoMaterial,"GeThickDetectorCryo",0,0,0);
     fLogicGeThickDetectorCryo->SetVisAttributes(ThickDetectorCryoVisAtt);
 
-    fAssembly->AddPlacedVolume(fLogicGeThickDetectorCryo, fGeThickDetectorCryoPos, rotateNull);
+    this->assemblyGedssd->AddPlacedVolume(fLogicGeThickDetectorCryo, fGeThickDetectorCryoPos, rotateNull);
 
     return 1;
 } //end ::ConstructThickDetectorCryo
@@ -237,11 +237,11 @@ G4int DetectionSystemGedssd::ConstructThickDetectorCryo() {
 G4int DetectionSystemGedssd::ConstructCryoEndCap() {
     G4Material* GeCryoEndCapMaterial = G4Material::GetMaterial("Al");
     if( !GeCryoEndCapMaterial ) {
-	G4out <<" ----> Material " << "Al" << "not found, cannot build the Cryo End Cap!" << G4endl;
+	G4cout <<" ----> Material " << "Al" << "not found, cannot build the Cryo End Cap!" << G4endl;
 	return 0;
     }
 
-    fGeCryoEndCapOutRad = fGeThickDetectoryCryoInnRad;
+    fGeCryoEndCapOutRad = fGeThickDetectorCryoInnRad;
     fGeCryoEndCapThickness = 1.143*mm; //use 0.1 cm for radioxenon
     //There are two end caps, so two positions
     fGeCryoEndCapPos1 = G4ThreeVector(0,0,fGeThickDetectorCryoThickness/2. - fGeCryoEndCapThickness/2.);
@@ -255,12 +255,12 @@ G4int DetectionSystemGedssd::ConstructCryoEndCap() {
     G4VisAttributes* CryoEndCapVisAtt = new G4VisAttributes(G4Colour::Green());
     CryoEndCapVisAtt->SetVisibility(true);
 
-    G4Tubs* solidGeCryoEndCap = new G4Tubs("GeCryoEndCap",0.,fGeCryoEndCapOutRad,fGeCryoEndCapThickness/2.,0.,twopi);
-    fLogicGeCryoEndCap = new G4LogicalVolume(solidGeCryoEndCap,GeThickDetectorCryoMaterial,"GeCryoEndCap",0,0,0);
+    G4Tubs* solidGeCryoEndCap = new G4Tubs("GeCryoEndCap",0.,fGeCryoEndCapOutRad,fGeCryoEndCapThickness/2.,0.,2*pi);
+    fLogicGeCryoEndCap = new G4LogicalVolume(solidGeCryoEndCap,GeCryoEndCapMaterial,"GeCryoEndCap",0,0,0);
     fLogicGeCryoEndCap->SetVisAttributes(CryoEndCapVisAtt);
 
-    fAssembly->AddPlacedVolume(fLogicGeCryoEndCap, fGeCryoEndCapPos1, rotateNull);
-    fAssembly->AddPlacedVolume(fLogicGeCryoEndCap, fGeCryoEndCapPos2, rotateNull);
+    this->assemblyGedssd->AddPlacedVolume(fLogicGeCryoEndCap, fGeCryoEndCapPos1, rotateNull);
+    this->assemblyGedssd->AddPlacedVolume(fLogicGeCryoEndCap, fGeCryoEndCapPos2, rotateNull);
 
     return 1;
 }//end ::ConstructCryoEndCap
@@ -272,7 +272,7 @@ G4int DetectionSystemGedssd::ConstructCryoEndCap() {
 G4int DetectionSystemGedssd::ConstructThickDetector() {
    G4Material* GeThickDetectorMaterial = G4Material::GetMaterial("Ge");
    if( !GeThickDetectorMaterial ) {
-	G4out << "-----> Material Ge not found, cannot build the Thick Detector!" <<G4endl;
+	G4cout << "-----> Material Ge not found, cannot build the Thick Detector!" <<G4endl;
 	return 0;
    }
 
@@ -285,12 +285,12 @@ G4int DetectionSystemGedssd::ConstructThickDetector() {
    G4VisAttributes* ThickDetectorVisAtt = new G4VisAttributes(G4Colour(1.0,1.0,.0));
    ThickDetectorVisAtt->SetVisibility(true);
 
-   G4Tubs* solidGeThickDetector = new G4Tubs("GeThickDetector",0,fGeThickDetectorRadius,fGeThickDetectorThickness/2.,0.,twopi);
+   G4Tubs* solidGeThickDetector = new G4Tubs("GeThickDetector",0,fGeThickDetectorRadius,fGeThickDetectorThickness/2.,0.,2*pi);
    fLogicGeThickDetector = new G4LogicalVolume(solidGeThickDetector,GeThickDetectorMaterial,"GeThickDetector",0,0,0);
 
    fLogicGeThickDetector->SetVisAttributes(ThickDetectorVisAtt);
 
-   fAssembly->AddPlacedVolume(fLogicGeThickDetector, fGeThickDetectorPos, rotateNull)
+   this->assemblyGedssd->AddPlacedVolume(fLogicGeThickDetector, fGeThickDetectorPos, rotateNull);
 
    return 1;
 } //end ::ConstructThickDetector
